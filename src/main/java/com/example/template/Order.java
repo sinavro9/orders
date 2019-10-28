@@ -1,5 +1,6 @@
 package com.example.template;
 
+import com.example.template.config.kafka.KafkaProcessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -10,6 +11,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.*;
@@ -35,7 +40,6 @@ public class Order {
      */
     @PostPersist
     private void publishOrderPlaced() {
-        KafkaTemplate kafkaTemplate = Application.applicationContext.getBean(KafkaTemplate.class);
         RestTemplate restTemplate = Application.applicationContext.getBean(RestTemplate.class);
 
         Environment env = Application.applicationContext.getEnvironment();
@@ -72,9 +76,24 @@ public class Order {
         }
 
         // 2. 주문이 발생함 이벤트 발송
-        String topicName = env.getProperty("eventTopic");
-        ProducerRecord producerRecord = new ProducerRecord<>(topicName, json);
-        kafkaTemplate.send(producerRecord);
+        /**
+         * spring kafka 방식
+         */
+//            Environment env = Application.applicationContext.getEnvironment();
+//            String topicName = env.getProperty("eventTopic");
+//            ProducerRecord producerRecord = new ProducerRecord<>(topicName, json);
+//            kafkaTemplate.send(producerRecord);
+
+        /**
+         * spring streams 방식
+         */
+        KafkaProcessor processor = Application.applicationContext.getBean(KafkaProcessor.class);
+        MessageChannel outputChannel = processor.outboundTopic();
+
+        outputChannel.send(MessageBuilder
+                .withPayload(json)
+                .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+                .build());
     }
 
     public Long getProductId() {
