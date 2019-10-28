@@ -25,7 +25,7 @@ public class OrderService {
     /**
      * 상품 변경이 발생할때마다, 상품정보를 저장해 놓음
      */
-    @KafkaListener(topics = "${eventTopic}")
+    @KafkaListener(topics = "${eventTopic}", groupId = "{{policy}}")
     public void onDeliveryCompleted(@Payload String message, ConsumerRecord<?, ?> consumerRecord) {
         System.out.println("##### listener : " + message);
 
