@@ -59,13 +59,13 @@ public class ProductChangedContactTest {
         Message<String> received = (Message<String>) messageCollector.forChannel(processor.outboundTopic()).poll();
 
         System.out.println("=======================================================");
-//        System.out.println(message);
         System.out.println(received.getPayload());
         System.out.println("=======================================================");
 
         DocumentContext parsedJson = JsonPath.parse(received.getPayload());
 
         // 넘어 오는 값에 대하여 validation 을 한다. 만약 productName 컬럼이 변경되었다면 에러가 발생한다.
+        assertThat(parsedJson.read("$.eventType", String.class)).isEqualTo("ProductChanged");
         assertThat(parsedJson.read("$.productId", String.class)).matches("[\\S\\s]+");
         assertThat(parsedJson.read("$.productName", String.class)).matches("[\\S\\s]+");
         assertThat(parsedJson.read("$.productPrice", String.class)).matches("[\\S\\s]+");

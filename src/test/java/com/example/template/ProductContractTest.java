@@ -77,7 +77,6 @@ public class ProductContractTest {
                         String.class);
 
         System.out.println("=======================================================");
-        System.out.println(this.mockPort);
         System.out.println(response);
         System.out.println("=======================================================");
 
