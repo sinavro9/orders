@@ -27,6 +27,7 @@ public class OrderService {
     /**
      * 상품 변경이 발생할때마다, 상품정보를 저장해 놓음
      */
+
     @StreamListener(KafkaProcessor.INPUT)
     public void onProductChanged(@Payload String message) {
         System.out.println("##### listener : " + message);
