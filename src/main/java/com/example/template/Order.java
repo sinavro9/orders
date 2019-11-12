@@ -3,18 +3,18 @@ package com.example.template;
 import com.example.template.config.kafka.KafkaProcessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.*;
@@ -39,7 +39,8 @@ public class Order {
      * 주문이 들어옴
      */
     @PostPersist
-    private void publishOrderPlaced() {
+    @ExceptionHandler(OrderException.class)
+    private void publishOrderPlaced(){
         RestTemplate restTemplate = Application.applicationContext.getBean(RestTemplate.class);
 
         Environment env = Application.applicationContext.getEnvironment();
@@ -52,7 +53,7 @@ public class Order {
 
         if("true".equalsIgnoreCase(env.getProperty("checkStock"))){
             // 1. 주문에 대한 상품 조회 - API
-            String productUrl = env.getProperty("productUrl") + "/products/" + productId;
+            String productUrl = env.getProperty("productUrl") + "/product/" + productId;
 
             ResponseEntity<String> productEntity = restTemplate.getForEntity(productUrl, String.class);
             JsonParser parser = new JsonParser();
@@ -62,7 +63,14 @@ public class Order {
             this.setProductName(jsonObject.get("name").getAsString());
 
             if( jsonObject.get("stock").getAsInt() < getQuantity()){
-                throw new RuntimeException("No Available stock!");
+                throw new OrderException("No Available stock!");
+            }
+        }else{
+            ProductRepository productRepository = Application.applicationContext.getBean(ProductRepository.class);
+            Optional<Product> productOptional = productRepository.findById(productId);
+            Product product = productOptional.get();
+            if( product.getStock() < getQuantity()){
+                throw new OrderException("No Available stock!");
             }
         }
 

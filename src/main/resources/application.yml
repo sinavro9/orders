@@ -14,7 +14,6 @@ spring:
           brokers: localhost:9092
         streams:
           binder:
-            configuration:
               default:
                 key:
                   serde: org.apache.kafka.common.serialization.Serdes$StringSerde
@@ -22,7 +21,7 @@ spring:
                   serde: org.apache.kafka.common.serialization.Serdes$StringSerde
       bindings:
         event-in:
-          group: orders
+          group: orders${random.value}
           destination: eventTopic
           contentType: application/json
         event-out:
