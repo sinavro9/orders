@@ -42,10 +42,7 @@ public class Order {
     @ExceptionHandler(OrderException.class)
     private void publishOrderPlaced(){
         RestTemplate restTemplate = Application.applicationContext.getBean(RestTemplate.class);
-
         Environment env = Application.applicationContext.getEnvironment();
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = null;
 
         if( productId == null ){
             throw new RuntimeException();
@@ -74,34 +71,16 @@ public class Order {
             }
         }
 
-        OrderPlaced orderPlaced = new OrderPlaced();
-        try {
-            orderPlaced.setOrderId(id);
-            BeanUtils.copyProperties(this, orderPlaced);
-            json = objectMapper.writeValueAsString(orderPlaced);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON format exception", e);
-        }
+        OrderPlaced orderPlaced = new OrderPlaced(this);
+        orderPlaced.sendMessage(orderPlaced.toJson());
+    }
 
-        // 2. 주문이 발생함 이벤트 발송
-        /**
-         * spring kafka 방식
-         */
-//            Environment env = Application.applicationContext.getEnvironment();
-//            String topicName = env.getProperty("eventTopic");
-//            ProducerRecord producerRecord = new ProducerRecord<>(topicName, json);
-//            kafkaTemplate.send(producerRecord);
+    public Long getId() {
+        return id;
+    }
 
-        /**
-         * spring streams 방식
-         */
-        KafkaProcessor processor = Application.applicationContext.getBean(KafkaProcessor.class);
-        MessageChannel outputChannel = processor.outboundTopic();
-
-        outputChannel.send(MessageBuilder
-                .withPayload(json)
-                .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-                .build());
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getProductId() {

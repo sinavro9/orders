@@ -23,6 +23,18 @@ public class OrderPlaced extends AbstractEvent{
         this.timestamp = defaultSimpleDateFormat.format(new Date());
     }
 
+    public OrderPlaced(Order order){
+        this();
+        this.setProductId(order.getProductId());
+        this.setProductName(order.getProductName());
+        this.setOrderId(order.getId());
+        this.setQuantity(order.getQuantity());
+        this.setPrice(order.getPrice());
+        this.setCustomerId(order.getCustomerId());
+        this.setCustomerName(order.getCustomerName());
+        this.setCustomerAddr(order.getCustomerAddr());
+    }
+
     public String getStateMessage() {
         return stateMessage;
     }

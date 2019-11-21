@@ -19,9 +19,6 @@ import java.util.Optional;
 public class OrderService {
 
     @Autowired
-    private KafkaTemplate kafkaTemplate;
-
-    @Autowired
     private ProductRepository productRepository;
 
     /**
@@ -38,16 +35,15 @@ public class OrderService {
         ProductChanged productChanged = null;
         try {
             productChanged = objectMapper.readValue(message, ProductChanged.class);
-            if( productChanged.getEventType().equals(ProductChanged.class.getSimpleName())){
+            if( productChanged.isMe()){
+                Product product = new Product();
+                product.setId(productChanged.getProductId());
+                product.setStock(productChanged.getProductStock());
+                product.setName(productChanged.getProductName());
+                product.setPrice(productChanged.getProductPrice());
 
+                productRepository.save(product);
             }
-            Product product = new Product();
-            product.setId(productChanged.getProductId());
-            product.setStock(productChanged.getProductStock());
-            product.setName(productChanged.getProductName());
-            product.setPrice(productChanged.getProductPrice());
-
-            productRepository.save(product);
 
         }catch (Exception e){
 
