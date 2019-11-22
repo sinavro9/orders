@@ -1,20 +1,10 @@
 package com.example.template;
 
-import com.example.template.config.kafka.KafkaProcessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.*;
@@ -34,19 +24,19 @@ public class Order {
     private String customerId;
     private String customerName;
     private String customerAddr;
+    private String state = "OrderPlaced";
 
-    /**
-     * 주문이 들어옴
-     */
-    @PostPersist
-    @ExceptionHandler(OrderException.class)
-    private void publishOrderPlaced(){
+    @PrePersist
+    private void orderCheck(){
         RestTemplate restTemplate = Application.applicationContext.getBean(RestTemplate.class);
         Environment env = Application.applicationContext.getEnvironment();
 
         if( productId == null ){
             throw new RuntimeException();
         }
+
+        int price = 0;
+        String productName = null;
 
         if("true".equalsIgnoreCase(env.getProperty("checkStock"))){
             // 1. 주문에 대한 상품 조회 - API
@@ -56,23 +46,53 @@ public class Order {
             JsonParser parser = new JsonParser();
             JsonObject jsonObject = parser.parse(productEntity.getBody()).getAsJsonObject();
 
-            this.setPrice(jsonObject.get("price").getAsInt());
-            this.setProductName(jsonObject.get("name").getAsString());
-
+            price = jsonObject.get("price").getAsInt();
+            productName = jsonObject.get("name").getAsString();
             if( jsonObject.get("stock").getAsInt() < getQuantity()){
                 throw new OrderException("No Available stock!");
             }
+
+
         }else{
             ProductRepository productRepository = Application.applicationContext.getBean(ProductRepository.class);
             Optional<Product> productOptional = productRepository.findById(productId);
             Product product = productOptional.get();
+
+            price = product.getPrice();
+            productName = product.getName();
             if( product.getStock() < getQuantity()){
                 throw new OrderException("No Available stock!");
             }
         }
+        this.setPrice(price);
+        this.setProductName(productName);
+    }
 
+    /**
+     * 주문이 들어옴
+     */
+    @PostPersist
+    @ExceptionHandler(OrderException.class)
+    private void publishOrderPlaced(){
         OrderPlaced orderPlaced = new OrderPlaced(this);
         orderPlaced.sendMessage(orderPlaced.toJson());
+    }
+
+    /**
+     * 주문이 취소됨
+     */
+    @PostUpdate
+    private void publishOrderCancelled(){
+        if( "OrderCancelled".equals(this.getState())){
+            // 이벤트를 발송하기 위하여 주문의 상세 정보를 조회
+
+            OrderRepository orderRepository = Application.applicationContext.getBean(OrderRepository.class);
+            Optional<Order> orderOptional = orderRepository.findById(this.getId());
+            Order order = orderOptional.get();
+
+            OrderCancelled orderCancelled = new OrderCancelled(order);
+            orderCancelled.sendMessage(orderCancelled.toJson());
+        }
     }
 
     public Long getId() {
@@ -137,5 +157,13 @@ public class Order {
 
     public void setCustomerAddr(String customerAddr) {
         this.customerAddr = customerAddr;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }
