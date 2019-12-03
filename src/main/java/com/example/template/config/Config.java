@@ -34,16 +34,12 @@ public class Config {
 			@Override
 			public Resource<Order> process(Resource<Order> resource) {
 
-				Link selfLink = resource.getLink("self");
-				String selfLinkUrl = selfLink.getHref();
-				try {
-					URL url = new URL(selfLinkUrl);
 
-					resource.add(new Link(url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + "/deliveries/search/findByOrderIdOrderByDeliveryIdDesc?orderId=" + resource.getContent().getId(), "delivery"));
+					resource.add(new Link("/deliveries/search/findByOrderIdOrderByDeliveryIdDesc?orderId=" + resource.getContent().getId(), "delivery"));
 
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				}
+
+
+
 
 				return resource;
 			}
