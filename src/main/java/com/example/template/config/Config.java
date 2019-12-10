@@ -2,23 +2,20 @@ package com.example.template.config;
 
 import com.example.template.Order;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import javax.xml.ws.soap.Addressing;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 
 @Configuration
 public class Config {
-
-	@Autowired
-	EntityLinks entityLinks;
 
 	@Bean
 	RestTemplate restTemplate() {
@@ -37,9 +34,11 @@ public class Config {
 			@Override
 			public Resource<Order> process(Resource<Order> resource) {
 
-				LinkBuilder linkBuilder = entityLinks.linkFor(Order.class);
+				Link selfLink = resource.getLink("self");
+				String selfLinkUrl = selfLink.getHref();
 				try {
-					URL url = new URL(linkBuilder.withSelfRel().getHref());
+					URL url = new URL(selfLinkUrl);
+
 					resource.add(new Link(url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + "/deliveries/search/findByOrderIdOrderByDeliveryIdDesc?orderId=" + resource.getContent().getId(), "delivery"));
 
 				} catch (MalformedURLException e) {
@@ -51,4 +50,3 @@ public class Config {
 		};
 	}
 }
-
