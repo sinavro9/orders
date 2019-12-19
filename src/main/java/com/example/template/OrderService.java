@@ -27,14 +27,18 @@ public class OrderService {
 
     @StreamListener(KafkaProcessor.INPUT)
     public void onProductChanged(@Payload ProductChanged productChanged) {
-        if( productChanged.isMe()){
-            System.out.println("##### listener : " + productChanged.toJson());
-            Product product = new Product();
-            product.setId(productChanged.getProductId());
-            product.setStock(productChanged.getProductStock());
-            product.setName(productChanged.getProductName());
-            product.setPrice(productChanged.getProductPrice());
-            productRepository.save(product);
+        try {
+            if (productChanged.isMe()) {
+                System.out.println("##### listener : " + productChanged.toJson());
+                Product product = new Product();
+                product.setId(productChanged.getProductId());
+                product.setStock(productChanged.getProductStock());
+                product.setName(productChanged.getProductName());
+                product.setPrice(productChanged.getProductPrice());
+                productRepository.save(product);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 }
