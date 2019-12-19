@@ -26,27 +26,15 @@ public class OrderService {
      */
 
     @StreamListener(KafkaProcessor.INPUT)
-    public void onProductChanged(@Payload String message) {
-        System.out.println("##### listener : " + message);
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        ProductChanged productChanged = null;
-        try {
-            productChanged = objectMapper.readValue(message, ProductChanged.class);
-            if( productChanged.isMe()){
-                Product product = new Product();
-                product.setId(productChanged.getProductId());
-                product.setStock(productChanged.getProductStock());
-                product.setName(productChanged.getProductName());
-                product.setPrice(productChanged.getProductPrice());
-
-                productRepository.save(product);
-            }
-
-        }catch (Exception e){
-
+    public void onProductChanged(@Payload ProductChanged productChanged) {
+        if( productChanged.isMe()){
+            System.out.println("##### listener : " + productChanged.toJson());
+            Product product = new Product();
+            product.setId(productChanged.getProductId());
+            product.setStock(productChanged.getProductStock());
+            product.setName(productChanged.getProductName());
+            product.setPrice(productChanged.getProductPrice());
+            productRepository.save(product);
         }
-
     }
 }
