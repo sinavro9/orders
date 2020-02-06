@@ -31,7 +31,8 @@ import java.util.Collections;
 // provide the [group-id]:[artifact-id]
 @AutoConfigureStubRunner(stubsMode = StubRunnerProperties.StubsMode.LOCAL, ids = "com.example:boot-camp-products")
 //@AutoConfigureStubRunner(
-//        repositoryRoot="http://34.85.54.161:8081/repository/maven-snapshots/",
+//        repositoryRoot="https://pkgs.dev.azure.com/eventstorming/_packaging/eventstorming/maven/v1/",
+////        repositoryRoot="http://34.85.54.161:8081/repository/maven-snapshots/",
 //        ids = "com.example:boot-camp-products:+:stubs:8090",
 //        stubsMode = StubRunnerProperties.StubsMode.REMOTE
 //)

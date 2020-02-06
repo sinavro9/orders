@@ -18,9 +18,7 @@ public class OrderPlaced extends AbstractEvent{
     private String customerAddr;
 
     public OrderPlaced(){
-        this.setEventType(this.getClass().getSimpleName());
-        SimpleDateFormat defaultSimpleDateFormat = new SimpleDateFormat("YYYYMMddHHmmss");
-        this.timestamp = defaultSimpleDateFormat.format(new Date());
+        super();
     }
 
     public OrderPlaced(Order order){

@@ -75,7 +75,7 @@ public class Order {
     @ExceptionHandler(OrderException.class)
     private void publishOrderPlaced(){
         OrderPlaced orderPlaced = new OrderPlaced(this);
-        orderPlaced.sendMessage(orderPlaced.toJson());
+        orderPlaced.publish();
     }
 
     /**
@@ -91,7 +91,7 @@ public class Order {
             Order order = orderOptional.get();
 
             OrderCancelled orderCancelled = new OrderCancelled(order);
-            orderCancelled.sendMessage(orderCancelled.toJson());
+            orderCancelled.publish();
         }
     }
 

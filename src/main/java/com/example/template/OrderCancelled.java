@@ -16,9 +16,7 @@ public class OrderCancelled extends AbstractEvent{
     private String customerName;
 
     public OrderCancelled(){
-        this.setEventType(this.getClass().getSimpleName());
-        SimpleDateFormat defaultSimpleDateFormat = new SimpleDateFormat("YYYYMMddHHmmss");
-        this.timestamp = defaultSimpleDateFormat.format(new Date());
+        super();
     }
 
     public OrderCancelled(Order order){

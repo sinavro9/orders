@@ -20,13 +20,13 @@ public class OrderController {
     @Autowired
     RestTemplate restTemplate;
 
-    @Value("${delivery.api.url:http://delivery:8080/startDelivery}")
+    @Value("${delivery.api.url:http://delivery:8080}")
     private String remoteURL;
 
-    @GetMapping("/order")
-    ResponseEntity<String> fakeOrder() {
+    @PostMapping("/order")
+    ResponseEntity<String> fakeOrder(@RequestBody String data) {
         try {
-            ResponseEntity<String> responseEntity = restTemplate.getForEntity(remoteURL, String.class);
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(remoteURL + "/startDelivery", data, String.class);
             String response = responseEntity.getBody();
             return ResponseEntity.ok(String.format(RESPONSE_STRING_FORMAT, response.trim()));
         } catch (Exception ex) {
