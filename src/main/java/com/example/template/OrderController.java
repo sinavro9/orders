@@ -28,6 +28,9 @@ public class OrderController {
         try {
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(remoteURL + "/startDelivery", data, String.class);
             String response = responseEntity.getBody();
+
+            logger.info(String.format(RESPONSE_STRING_FORMAT, response.trim()));
+
             return ResponseEntity.ok(String.format(RESPONSE_STRING_FORMAT, response.trim()));
         } catch (Exception ex) {
             logger.warn("Exception trying to get the response from order service.", ex);
