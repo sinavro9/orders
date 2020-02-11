@@ -40,7 +40,7 @@ public class Order {
 
         if("true".equalsIgnoreCase(env.getProperty("checkStock"))){
             // 1. 주문에 대한 상품 조회 - API
-            String productUrl = env.getProperty("productUrl") + "/product/" + productId;
+            String productUrl = env.getProperty("api.url.product") + "/product/" + productId;
 
             ResponseEntity<String> productEntity = restTemplate.getForEntity(productUrl, String.class);
             JsonParser parser = new JsonParser();

@@ -20,7 +20,7 @@ public class OrderController {
     @Autowired
     RestTemplate restTemplate;
 
-    @Value("${delivery.api.url:http://delivery:8080}")
+    @Value("${api.url.delivery:http://delivery:8080}")
     private String remoteURL;
 
     @PostMapping("/order")
