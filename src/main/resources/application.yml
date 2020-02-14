@@ -48,7 +48,6 @@ logging:
 
 api:
   url:
-    delivery: http://localhost:8082
     product: http://localhost:8085
 
 server:
@@ -82,5 +81,6 @@ spring:
         event-out:
           destination: eventTopicDocker
           contentType: application/json
-
-productUrl: http://products:8080
+api:
+  url:
+    product: http://products:8080
