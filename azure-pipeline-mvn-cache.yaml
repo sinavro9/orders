@@ -14,7 +14,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - task: Cache@2
+  - task: CacheBeta@1
     inputs:
       key: 'maven | "$(Agent.OS)" | **/pom.xml'
       restoreKeys: |
@@ -32,21 +32,6 @@ steps:
       mavenAuthenticateFeed: false
       effectivePomSkip: false
       sonarQubeRunAnalysis: false
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(system.defaultworkingdirectory)'
-      Contents: |
-        **/*.jar
-        Dockerfile
-        kubernetes/*
-      TargetFolder: '$(build.artifactstagingdirectory)'
-
-  - task: PublishPipelineArtifact@1
-    inputs:
-      targetPath: '$(build.artifactstagingdirectory)'
-      artifact: 'target'
-      publishLocation: 'pipeline'
-
   - task: Docker@2
     inputs:
       containerRegistry: 'myEventstormingRegistry'
